@@ -1,10 +1,11 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const db = require('../config/db');
+const Golfer = require('../models/golfer');
 
 // Options for request
 const options = {
-    uri: 'http://www.espn.com/golf/leaderboard?tournamentId=401025255',
+    uri: 'http://www.espn.com/golf/leaderboard?tournamentId=401025221',
     transform: (body) => {
         return cheerio.load(body);
     }
@@ -15,6 +16,8 @@ db(() => {
     // Make the request
     rp(options)
         .then(($) => {
+            const tournamentName = "Masters";
+
             let cutScore;
 
             // Scrape the page for golfer names and scores
@@ -34,13 +37,20 @@ db(() => {
                     score = cutScore;
                     active = false;
                 }
-                
-                console.log(`${name}: ${score} ` + (active ? '' : '*'));
+
+                Golfer.update(
+                  { name: name.toUpperCase(), tournament: tournamentName},
+                  { score: score, active: active },
+                  (err) => {
+                    if (err) {
+                      console.log(err)
+                    }
+                  });
+
+                console.log(`${name.toUpperCase()}: ${score} ` + (active ? '' : '*'));
             }));
         })
         .catch((err) => {
             console.log(err)
         });
 });
-
-

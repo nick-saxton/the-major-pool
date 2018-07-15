@@ -22,4 +22,20 @@ router.get('/', (req, res) => {
         .catch(err => console.log(err));
 });
 
+// @route GET api/entries/:id
+// @desc Get a single entry
+// @access Public
+router.get('/:id', (req, res) => {
+  Entrant.findById(req.params.id)
+    .populate('Masters')
+    .populate('USOpen')
+    .populate('OpenChampionship')
+    .populate('PGAChampionship')
+    .exec()
+    .then(entry => {
+      res.json(entry);
+    })
+    .catch(err => console.log(err));
+});
+
 module.exports = router;
